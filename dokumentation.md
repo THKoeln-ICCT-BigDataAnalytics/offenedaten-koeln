@@ -230,3 +230,13 @@ Suchanfrage
 → Mit Reranker bekommt Mistral die Kandidaten und sortiert/filtert sie
 → finale Trefferliste wird ausgegeben
 ```
+
+Hinweis:
+Berechnung der Kosinus-Distanz und Ähnlichkeit.
+
+Kernformeln
+
+Kosinus-Distanz:	1 - cos(a, b) = 1 - (a·b) / (‖a‖·‖b‖)
+Kosinus-Ähnlichkeit:	1 - cosine_distance  
+
+Bei typischen Text-Embeddings liegt die Ähnlichkeit meist zwischen ca. 0 und 1.
