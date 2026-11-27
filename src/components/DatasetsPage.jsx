@@ -2,10 +2,11 @@ import { useState } from "react";
 import Filters from "./Filters";
 import Pagination from "./Pagination";
 import ResultCard from "./ResultCard";
+import SearchForm from "./SearchForm";
 
 const PAGE_SIZE = 10;
 
-export default function DatasetsPage({ query, submittedQuery, setQuery, onSearch, openSettings, openHomePage, results, allDatasets, searched, loading, filters, setFilters, sortMode, setSortMode, page, setPage }) {
+export default function DatasetsPage({ query, submittedQuery, setQuery, onSearch, searchSettings, results, allDatasets, searched, loading, filters, setFilters, sortMode, setSortMode, page, setPage }) {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const baseList = searched ? results : allDatasets;
   const filtered = applyFilters(baseList, filters);
@@ -31,30 +32,11 @@ export default function DatasetsPage({ query, submittedQuery, setQuery, onSearch
 
   return (
     <main className="container datasets-page" id="main-content">
-      <nav aria-label="Pfadnavigation" className="breadcrumb">
-        <a
-          href="#start"
-          onClick={(e) => {
-            e.preventDefault();
-            openHomePage();
-          }}
-        >
-          Startseite
-        </a>
-      </nav>
       <h1 className="display-3">Datensätze</h1>
 
       <section className="search-intro">
         <h2>Bitte geben Sie einen Suchbegriff ein.</h2>
-        <form className="search-form dataset-search" role="search" onSubmit={submit}>
-          <input type="search" className="form-control form-control-lg" placeholder="Datensätze suchen" aria-label="Datensätze suchen" value={query} onChange={(e) => setQuery(e.target.value)} />
-          <button type="submit" className="btn btn-primary btn-icon" aria-label="Suchen">
-            <i className="bi bi-search" aria-hidden="true"></i>
-          </button>
-          <button type="button" className="btn btn-outline-primary btn-icon" aria-label="Sucheinstellungen" title="Sucheinstellungen" onClick={openSettings}>
-            <i className="bi bi-gear" aria-hidden="true"></i>
-          </button>
-        </form>
+        <SearchForm value={query} onChange={setQuery} onSubmit={submit} settings={searchSettings} />
       </section>
 
       {loading ? (

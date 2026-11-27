@@ -4,7 +4,6 @@ import Header from "./components/Header";
 import HomePage from "./components/HomePage";
 import DatasetsPage from "./components/DatasetsPage";
 import Footer from "./components/Footer";
-import SearchSettings from "./components/SearchSettings";
 import { loadDatasets } from "./services/csvService";
 import { searchDatasets } from "./services/searchService";
 
@@ -19,7 +18,6 @@ export default function App() {
   const [topK, setTopK] = useState(10);
   const [rerankerEnabled, setRerankerEnabled] = useState(true);
   const [pageName, setPageName] = useState("home");
-  const [settingsVisible, setSettingsVisible] = useState(false);
   const [page, setPage] = useState(1);
   const [sortMode, setSortMode] = useState("relevance");
   const [filters, setFilters] = useState({ theme: [], format: [], publisher: [], year: [], license: [], keyword: [] });
@@ -84,24 +82,20 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function openSettings() {
-    setSettingsVisible((visible) => !visible);
-  }
+  const searchSettings = { apiKey, setApiKey, topK, setTopK, rerankerEnabled, setRerankerEnabled };
 
   return (
     <>
       <Header onSearch={handleSearch} openHomePage={openHomePage} openDatasetsPage={openDatasetsPage} pageName={pageName} />
-      <SearchSettings visible={settingsVisible} apiKey={apiKey} setApiKey={setApiKey} topK={topK} setTopK={setTopK} rerankerEnabled={rerankerEnabled} setRerankerEnabled={setRerankerEnabled} onClose={() => setSettingsVisible(false)} />
 
-      {pageName === "home" && <HomePage onSearch={handleSearch} openSettings={openSettings} datasets={datasets} openDatasetsPage={openDatasetsPage} setFilters={setFilters} />}
+      {pageName === "home" && <HomePage onSearch={handleSearch} searchSettings={searchSettings} datasets={datasets} openDatasetsPage={openDatasetsPage} setFilters={setFilters} />}
       {pageName === "datasets" && (
         <DatasetsPage
           query={query}
           submittedQuery={submittedQuery}
           setQuery={setQuery}
           onSearch={handleSearch}
-          openSettings={openSettings}
-          openHomePage={openHomePage}
+          searchSettings={searchSettings}
           results={results}
           allDatasets={datasets}
           searched={searched}

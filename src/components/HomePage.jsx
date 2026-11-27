@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { externalLinkProps, originalLinks } from "../services/linkService";
+import SearchForm from "./SearchForm";
 
 // Reihenfolge und Icons wie auf offenedaten-koeln.de (Bootstrap Icons).
 const categoryLinks = [
@@ -24,7 +25,7 @@ const featuredTitles = [
   "Bebauungspläne Köln Aufstellungsbeschlüsse ",
 ];
 
-export default function HomePage({ onSearch, openSettings, datasets, openDatasetsPage, setFilters }) {
+export default function HomePage({ onSearch, searchSettings, datasets, openDatasetsPage, setFilters }) {
   const [homeQuery, setHomeQuery] = useState("");
 
   async function submit(e) {
@@ -49,15 +50,7 @@ export default function HomePage({ onSearch, openSettings, datasets, openDataset
         <div className="container">
           <div className="hero-box">
             <h2 className="display-5"><a target="_blank" href="https://www.offenedaten-koeln.de/" rel="noopener noreferrer">Offene Daten Köln</a>: KI-gestützte Datensuche durch das ICCT Labor der Technischen Hochschule Köln.</h2>
-            <form className="search-form" role="search" onSubmit={submit}>
-              <input type="search" className="form-control form-control-lg" placeholder="Datensätze suchen" aria-label="Datensätze suchen" value={homeQuery} onChange={(e) => setHomeQuery(e.target.value)} />
-              <button type="submit" className="btn btn-outline-light btn-icon" aria-label="Suchen">
-                <i className="bi bi-search" aria-hidden="true"></i>
-              </button>
-              <button type="button" className="btn btn-outline-light btn-icon" aria-label="Sucheinstellungen" title="Sucheinstellungen" onClick={openSettings}>
-                <i className="bi bi-gear" aria-hidden="true"></i>
-              </button>
-            </form>
+            <SearchForm variant="hero" value={homeQuery} onChange={setHomeQuery} onSubmit={submit} settings={searchSettings} />
           </div>
         </div>
       </section>
