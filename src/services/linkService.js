@@ -1,12 +1,15 @@
-export function openOriginal(url) {
-  window.open(url, "_blank", "noopener,noreferrer");
+export const ORIGINAL_BASE_URL = "https://offenedaten-koeln.de";
+
+export function originalUrl(path = "/") {
+  return `${ORIGINAL_BASE_URL}${path}`;
 }
 
 export const originalLinks = {
-  home: "https://offenedaten-koeln.de/",
-  datasets: "https://offenedaten-koeln.de/datasets",
-  series: "https://offenedaten-koeln.de/datasets/series",
-  publishers: "https://offenedaten-koeln.de/publisher",
-  blog: "https://offenedaten-koeln.de/blog",
-  more: "https://offenedaten-koeln.de/",
+  home: originalUrl("/"),
+  logo: originalUrl("/themes/custom/dkan_bootstrap5/dist/bootstrap/img/logo.svg"),
+  cityLogo: originalUrl("/themes/custom/dkan_bootstrap5/dist/bootstrap/img/parent-logo.svg"),
+  hero: originalUrl("/themes/custom/dkan_bootstrap5/dist/bootstrap/img/hero.jpg"),
 };
+
+// Props für alle Links, die auf eine externe Seite führen.
+export const externalLinkProps = { target: "_blank", rel: "noopener noreferrer" };

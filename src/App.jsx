@@ -3,6 +3,7 @@ import "./App.css";
 import Header from "./components/Header";
 import HomePage from "./components/HomePage";
 import DatasetsPage from "./components/DatasetsPage";
+import Footer from "./components/Footer";
 import SearchSettings from "./components/SearchSettings";
 import { loadDatasets } from "./services/csvService";
 import { searchDatasets } from "./services/searchService";
@@ -70,6 +71,7 @@ export default function App() {
     setSubmittedQuery("");
     setResults([]);
     setPage(1);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function openDatasetsPage() {
@@ -89,9 +91,9 @@ export default function App() {
   return (
     <>
       <Header onSearch={handleSearch} openHomePage={openHomePage} openDatasetsPage={openDatasetsPage} pageName={pageName} />
-      <SearchSettings visible={settingsVisible} apiKey={apiKey} setApiKey={setApiKey} topK={topK} setTopK={setTopK} rerankerEnabled={rerankerEnabled} setRerankerEnabled={setRerankerEnabled} />
+      <SearchSettings visible={settingsVisible} apiKey={apiKey} setApiKey={setApiKey} topK={topK} setTopK={setTopK} rerankerEnabled={rerankerEnabled} setRerankerEnabled={setRerankerEnabled} onClose={() => setSettingsVisible(false)} />
 
-      {pageName === "home" && <HomePage onSearch={handleSearch} openSettings={openSettings} openHomePage={openHomePage} datasets={datasets} openDatasetsPage={openDatasetsPage} setFilters={setFilters} />}
+      {pageName === "home" && <HomePage onSearch={handleSearch} openSettings={openSettings} datasets={datasets} openDatasetsPage={openDatasetsPage} setFilters={setFilters} />}
       {pageName === "datasets" && (
         <DatasetsPage
           query={query}
@@ -99,6 +101,7 @@ export default function App() {
           setQuery={setQuery}
           onSearch={handleSearch}
           openSettings={openSettings}
+          openHomePage={openHomePage}
           results={results}
           allDatasets={datasets}
           searched={searched}
@@ -111,6 +114,8 @@ export default function App() {
           setPage={setPage}
         />
       )}
+
+      {/* <Footer openHomePage={openHomePage} /> */}
     </>
   );
 }

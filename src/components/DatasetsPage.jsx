@@ -1,10 +1,12 @@
+import { useState } from "react";
 import Filters from "./Filters";
 import Pagination from "./Pagination";
 import ResultCard from "./ResultCard";
 
 const PAGE_SIZE = 10;
 
-export default function DatasetsPage({ query, submittedQuery, setQuery, onSearch, openSettings, results, allDatasets, searched, loading, filters, setFilters, sortMode, setSortMode, page, setPage }) {
+export default function DatasetsPage({ query, submittedQuery, setQuery, onSearch, openSettings, openHomePage, results, allDatasets, searched, loading, filters, setFilters, sortMode, setSortMode, page, setPage }) {
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const baseList = searched ? results : allDatasets;
   const filtered = applyFilters(baseList, filters);
   const sorted = applySorting(filtered, sortMode);
@@ -20,47 +22,80 @@ export default function DatasetsPage({ query, submittedQuery, setQuery, onSearch
   function updateFilters(nextFilters) {
     setFilters(nextFilters);
     setPage(1);
+  }
+
+  function changePage(nextPage) {
+    setPage(nextPage);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   return (
-    <main className="datasets-page">
-      <a className="breadcrumb" href="https://offenedaten-koeln.de/" target="_blank" rel="noreferrer">Startseite</a>
-      <h1>Datensätze</h1>
-      <h2>Bitte geben Sie einen Suchbegriff ein.</h2>
+    <main className="container datasets-page" id="main-content">
+      <nav aria-label="Pfadnavigation" className="breadcrumb">
+        <a
+          href="#start"
+          onClick={(e) => {
+            e.preventDefault();
+            openHomePage();
+          }}
+        >
+          Startseite
+        </a>
+      </nav>
+      <h1 className="display-3">Datensätze</h1>
 
-      <form className="dataset-search" onSubmit={submit}>
-        <input placeholder="Datensätze suchen" value={query} onChange={(e) => setQuery(e.target.value)} />
-        <button type="submit" className="dataset-search-button" aria-label="Suche">⌕</button>
-        <button type="button" className="dataset-settings-button" aria-label="Einstellungen" onClick={openSettings}>⚙</button>
-      </form>
+      <section className="search-intro">
+        <h2>Bitte geben Sie einen Suchbegriff ein.</h2>
+        <form className="search-form dataset-search" role="search" onSubmit={submit}>
+          <input type="search" className="form-control form-control-lg" placeholder="Datensätze suchen" aria-label="Datensätze suchen" value={query} onChange={(e) => setQuery(e.target.value)} />
+          <button type="submit" className="btn btn-primary btn-icon" aria-label="Suchen">
+            <i className="bi bi-search" aria-hidden="true"></i>
+          </button>
+          <button type="button" className="btn btn-outline-primary btn-icon" aria-label="Sucheinstellungen" title="Sucheinstellungen" onClick={openSettings}>
+            <i className="bi bi-gear" aria-hidden="true"></i>
+          </button>
+        </form>
+      </section>
 
-      {loading && <p>Suche läuft...</p>}
-      {!loading && (
-        <h2>{searched && submittedQuery ? `Ihre Suche nach ${submittedQuery} ergab ${sorted.length} Treffer.` : `Ihre Suche ergab ${sorted.length} Treffer.`}</h2>
+      {loading ? (
+        <p className="h2 result-count" role="status">
+          <span className="spinner" aria-hidden="true"></span> Suche läuft …
+        </p>
+      ) : (
+        <p className="h2 result-count" role="status" aria-live="polite">
+          {searched && submittedQuery ? `Ihre Suche nach ${submittedQuery} ergab ${sorted.length} Treffer.` : `Ihre Suche ergab ${sorted.length} Treffer.`}
+        </p>
       )}
 
       {!loading && searched && sorted.length === 0 && (
         <div className="empty-box">
-          <div className="empty-icon">⌕</div>
-          <p>Beginnen Sie Ihre Suche, indem Sie in das obige Feld tippen.<br />Noch keine Ergebnisse - durchsuchen Sie die Seite, um zu finden, was Sie suchen.</p>
+          <i className="bi bi-search" aria-hidden="true"></i>
+          <p>Beginnen Sie Ihre Suche, indem Sie in das obige Feld tippen.<br />Noch keine Ergebnisse – durchsuchen Sie die Seite, um zu finden, was Sie suchen.</p>
         </div>
       )}
 
       {!loading && sorted.length > 0 && (
         <div className="results-layout">
-          <Filters datasets={baseList} filters={filters} setFilters={updateFilters} />
-          <section className="results-section">
+          <Filters datasets={baseList} filters={filters} setFilters={updateFilters} open={filtersOpen} onClose={() => setFiltersOpen(false)} />
+          <section className="results-section" aria-label="Suchergebnisse">
             <div className="sort-row">
-              <strong>Sortieren nach</strong>
-              <select value={sortMode} onChange={(e) => setSortMode(e.target.value)}>
+              <label htmlFor="sort-select"><strong>Sortieren nach</strong></label>
+              <select id="sort-select" className="sort-select" value={sortMode} onChange={(e) => setSortMode(e.target.value)}>
                 <option value="relevance">Relevanz</option>
                 <option value="az">A-Z</option>
                 <option value="za">Z-A</option>
               </select>
             </div>
-            {visibleResults.map((dataset) => <ResultCard key={dataset.id} dataset={dataset} />)}
-            <Pagination page={page} totalPages={totalPages} setPage={setPage} />
+            <div className="filter-toggle-row">
+              <strong>Filtern nach</strong>
+              <button type="button" className="btn btn-dark btn-icon" aria-label="Filter umschalten" aria-expanded={filtersOpen} onClick={() => setFiltersOpen((open) => !open)}>
+                <i className="bi bi-funnel-fill" aria-hidden="true"></i>
+              </button>
+            </div>
+            <div className="result-list">
+              {visibleResults.map((dataset) => <ResultCard key={dataset.id} dataset={dataset} />)}
+            </div>
+            <Pagination page={page} totalPages={totalPages} setPage={changePage} />
           </section>
         </div>
       )}
@@ -70,9 +105,10 @@ export default function DatasetsPage({ query, submittedQuery, setQuery, onSearch
 
 function applySorting(datasets, sortMode) {
   const copy = [...datasets];
-  if (sortMode === "az") return copy.sort((a, b) => a.title.localeCompare(b.title));
-  if (sortMode === "za") return copy.sort((a, b) => b.title.localeCompare(a.title));
-  return copy.sort((a, b) => (b.cosine_similarity || 0) - (a.cosine_similarity || 0));
+  if (sortMode === "az") return copy.sort((a, b) => a.title.localeCompare(b.title, "de"));
+  if (sortMode === "za") return copy.sort((a, b) => b.title.localeCompare(a.title, "de"));
+  // "Relevanz": Reihenfolge der Suche beibehalten (Kosinus-Ähnlichkeit bzw. Reranker-Ranking).
+  return copy;
 }
 
 function applyFilters(datasets, filters) {

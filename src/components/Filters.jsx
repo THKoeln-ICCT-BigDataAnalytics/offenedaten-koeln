@@ -1,4 +1,8 @@
-export default function Filters({ datasets, filters, setFilters }) {
+import { useState } from "react";
+
+const SOFT_LIMIT = 5;
+
+export default function Filters({ datasets, filters, setFilters, open, onClose }) {
   const categories = countArrayValues(datasets, "categoriesArray");
   const formats = countArrayValues(datasets, "formatsArray");
   const publishers = countValues(datasets, "publisher");
@@ -7,36 +11,64 @@ export default function Filters({ datasets, filters, setFilters }) {
   const keywords = countArrayValues(datasets, "keywordsArray");
 
   return (
-    <aside className="filters">
-      <h3>Filtern nach</h3>
-      <FilterGroup title="Kategorie" name="theme" values={categories} filters={filters} setFilters={setFilters} />
-      <FilterGroup title="Format" name="format" values={formats} filters={filters} setFilters={setFilters} />
-      <FilterGroup title="Herausgeber" name="publisher" values={publishers} filters={filters} setFilters={setFilters} />
-      <FilterGroup title="Erstellungszeitraum" name="year" values={years} filters={filters} setFilters={setFilters} />
-      <FilterGroup title="Lizenz" name="license" values={licenses} filters={filters} setFilters={setFilters} />
-      <FilterGroup title="Schlagwort" name="keyword" values={keywords} filters={filters} setFilters={setFilters} />
+    <aside className={`filters ${open ? "is-open" : ""}`} aria-label="Filter">
+      <div className="filters-close">
+        <p className="h6">Filter schließen</p>
+        <button type="button" className="btn btn-outline btn-icon" aria-label="Filter schließen" onClick={onClose}>
+          <i className="bi bi-x-lg" aria-hidden="true"></i>
+        </button>
+      </div>
+      <h2 className="filters-title">Filtern nach</h2>
+      <div className="filter-groups">
+        <FilterGroup title="Kategorie" name="theme" values={categories} filters={filters} setFilters={setFilters} />
+        <FilterGroup title="Format" name="format" values={formats} filters={filters} setFilters={setFilters} />
+        <FilterGroup title="Herausgeber" name="publisher" values={publishers} filters={filters} setFilters={setFilters} />
+        <FilterGroup title="Erstellungszeitraum" name="year" values={years} filters={filters} setFilters={setFilters} />
+        <FilterGroup title="Lizenz" name="license" values={licenses} filters={filters} setFilters={setFilters} />
+        <FilterGroup title="Schlagwort" name="keyword" values={keywords} filters={filters} setFilters={setFilters} />
+      </div>
     </aside>
   );
 }
 
 function FilterGroup({ title, name, values, filters, setFilters }) {
+  const [expanded, setExpanded] = useState(false);
+  if (values.length === 0) return null;
+
+  const selected = filters[name] || [];
+  // Ausgewählte Werte bleiben immer sichtbar, auch wenn die Liste eingeklappt ist.
+  const visibleValues = expanded ? values : values.filter(([value], index) => index < SOFT_LIMIT || selected.includes(value));
+
   return (
     <div className="filter-group">
-      <h4>{title}</h4>
-      {values.map(([value, count]) => (
-        <label key={value}>
-          <input
-            type="checkbox"
-            checked={(filters[name] || []).includes(value)}
-            onChange={(e) => {
-              const current = filters[name] || [];
-              const next = e.target.checked ? [...current, value] : current.filter((v) => v !== value);
-              setFilters({ ...filters, [name]: next });
-            }}
-          />
-          {value} ({count})
-        </label>
-      ))}
+      <h3>{title}</h3>
+      <ul>
+        {visibleValues.map(([value, count]) => {
+          const id = `filter-${name}-${value}`.replace(/[^a-zA-Z0-9_-]/g, "-");
+          return (
+            <li key={value} className="form-check">
+              <input
+                type="checkbox"
+                id={id}
+                className="form-check-input"
+                checked={selected.includes(value)}
+                onChange={(e) => {
+                  const next = e.target.checked ? [...selected, value] : selected.filter((v) => v !== value);
+                  setFilters({ ...filters, [name]: next });
+                }}
+              />
+              <label htmlFor={id}>
+                {value} <span className="text-muted">({count})</span>
+              </label>
+            </li>
+          );
+        })}
+      </ul>
+      {values.length > SOFT_LIMIT && (
+        <button type="button" className="btn-link" onClick={() => setExpanded((value) => !value)}>
+          {expanded ? "Weniger" : "Mehr"}
+        </button>
+      )}
     </div>
   );
 }

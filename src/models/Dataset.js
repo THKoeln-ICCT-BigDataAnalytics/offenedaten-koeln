@@ -157,13 +157,46 @@ function cleanTextValue(value) {
     .trim();
 }
 
+// offenedaten-koeln.de (Drupal/DKAN) erzeugt die Datensatz-URLs mit dem
+// Pathauto-Modul aus dem Titel. Diese Funktion bildet dessen Standardregeln nach:
+// deutsche Transliteration, Satzzeichen entfernen (Bindestrich -> Trenner),
+// englische Füllwörter entfernen ("Container in Köln" -> "container-koeln")
+// und den Alias "dataset/<slug>" wortweise auf 100 Zeichen kürzen.
+const PATHAUTO_IGNORE_WORDS =
+  "a|an|as|at|before|but|by|for|from|is|in|into|like|of|off|on|onto|per|since|than|the|this|that|to|up|via|with";
+const PATHAUTO_MAX_LENGTH = 100;
+const DATASET_ALIAS_PREFIX = "dataset/";
+
 export function createDatasetSlug(title) {
-  return String(title || "")
-    .toLowerCase()
+  let text = String(title || "")
+    .trim()
+    .replace(/Ä/g, "Ae")
+    .replace(/Ö/g, "Oe")
+    .replace(/Ü/g, "Ue")
     .replace(/ä/g, "ae")
     .replace(/ö/g, "oe")
     .replace(/ü/g, "ue")
     .replace(/ß/g, "ss")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+    .normalize("NFKD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[‐-―]/g, "-")
+    .replace(/[^A-Za-z0-9\s-]/g, "");
+
+  const withoutIgnoredWords = text.replace(new RegExp(`\\b(${PATHAUTO_IGNORE_WORDS})\\b`, "gi"), "");
+  if (withoutIgnoredWords.trim()) text = withoutIgnoredWords;
+
+  const slug = text
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .toLowerCase();
+
+  const alias = truncateWordSafe(DATASET_ALIAS_PREFIX + truncateWordSafe(slug, PATHAUTO_MAX_LENGTH), PATHAUTO_MAX_LENGTH);
+  return alias.slice(DATASET_ALIAS_PREFIX.length);
+}
+
+function truncateWordSafe(value, maxLength) {
+  if (value.length <= maxLength) return value;
+  const match = value.match(new RegExp(`^([\\s\\S]{1,${maxLength}})[-/\\s]`));
+  return match ? match[1] : value.slice(0, maxLength);
 }
