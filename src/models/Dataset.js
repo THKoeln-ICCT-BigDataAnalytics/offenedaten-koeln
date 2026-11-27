@@ -46,9 +46,22 @@ export class Dataset {
   }
 
   get originalUrl() {
-    return `https://offenedaten-koeln.de/dataset/${this.slug}`;
+    return `https://offenedaten-koeln.de/dataset/${DATASET_URL_OVERRIDES[this.title] || this.slug}`;
   }
 }
+
+const DATASET_URL_OVERRIDES = {
+  "Allgemeinbildende Schulen: Einschulungen und Nichteinschulungen nach Schulform, Geschlecht und Nationalität":
+    "allgemeinbildende-schulen-einschulungen-und-nichteinschulungen-nach-schulform-geschlecht",
+  "Berufsbildungsstatistik: Auszubildende nach Ausbildungsbereichen, Geschlecht und Nationalität":
+    "berufsbildungsstatistik-auszubildende-nach-ausbildungsbereichen-geschlecht-und",
+  "Hauptamtliche Ärztinnen und Ärzte nach deren funktionellen Stellung und Geschlecht (ab 2005)":
+    "hauptamtliche-aerztinnen-und-aerzte-nach-deren-funktionellen-stellung-und-geschlecht-ab",
+  "Landwirtschaftliche Betriebe und deren Fläche nach der Betriebswirtschaftlichen Ausrichtung.":
+    "landwirtschaftliche-betriebe-und-deren-flaeche-nach-der-betriebswirtschaftlichen",
+  "Pflegeberufe: Träger der praktischen Ausbildung und Pflegeschulen nach Art der Trägerschaft":
+    "pflegeberufe-traeger-der-praktischen-ausbildung-und-pflegeschulen-nach-art-der",
+};
 
 function parseEmbedding(value) {
   if (!value) return [];
